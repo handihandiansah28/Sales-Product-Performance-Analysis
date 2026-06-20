@@ -13,11 +13,27 @@ Hasil analisis ini diharapkan dapat membantu tim Manajemen, Marketing, dan Inven
 
 ## 🛠️ 2. Data Preparation & Cleaning
 
-Proses pengolahan data mentah dilakukan melalui beberapa tahapan berikut untuk memastikan validitas analisis:
-1. **Data Cleaning:** Membersihkan data duplikat, menangani *missing values*, serta membuang data transaksi yang tidak valid/dibatalkan.
-2. **Data Transformation:** Mengubah tipe data teks pada kolom tanggal menjadi format `Date` standar, serta menyamakan format penulisan nama produk.
-3. **Data Aggregation:** Mengelompokkan total kuantitas (`QTY`) dan menghitung total pendapatan berdasarkan kategori produk dan periode bulanan sebelum dihubungkan ke alat visualisasi.
-4. **Tools Used:** Python (Pandas/NumPy) / SQL untuk pengolahan data, dan Looker Studio / Tableau untuk pembuatan *dashboard* visual.
+Proses pengolahan data dilakukan menggunakan Google Cloud BigQuery untuk mengubah data mentah (*raw data*) menjadi tabel yang valid, konsisten, dan siap digunakan untuk kebutuhan visualisasi:
+
+1. **Standardisasi Tipe Data ID & Kode Pos (`CAST AS STRING`)**
+   * **Tindakan:** Mengubah tipe data seluruh kolom kunci/relasional (`order_detail_id`, `order_id`, `product_id`, `seller_id`, `buyer_id`, `user_id`) dan `kodepos` menjadi tipe `STRING`.
+   * **Alasan:** Kolom identitas bukanlah data numerik yang akan dihitung secara matematis. Mengubahnya menjadi string mencegah terjadinya galat (*error*) dan memastikan proses penggabungan tabel (*table joining*) berjalan dengan mulus.
+
+2. **Validasi Format Tanggal (`SAFE_CAST`)**
+   * **Tindakan:** Mentransformasi kolom `paid_at` dan `delivery_at` menjadi tipe data `DATE` menggunakan fungsi `SAFE_CAST`.
+   * **Alasan:** Menghindari kegagalan query (*runtime error*) akibat adanya data tanggal yang korup atau tidak valid pada tabel asal. Fungsi ini akan mengubah format yang salah menjadi `NULL` secara aman.
+
+3. **Normalisasi & Pembersihan Teks (`TRIM` & `INITCAP`)**
+   * **Tindakan:** Mengaplikasikan kombinasi fungsi `INITCAP(TRIM(desc_product))` pada deskripsi produk.
+   * **Alasan:** Menghapus spasi kosong yang tidak diinginkan di awal/akhir kalimat (`TRIM`) serta menstandardisasi format penulisan nama produk menjadi huruf kapital di setiap awal kata (`INITCAP`) agar visualisasi pada dasbor terlihat rapi dan seragam.
+
+4. **Filtrasi Transaksi Valid (`WHERE IS NOT NULL`)**
+   * **Tindakan:** Menyaring data transaksi dengan kondisi `where paid_at is not null and delivery_at is not null`.
+   * **Alasan:** Memastikan metrik finansial seperti pendapatan (*revenue*) dan volume penjualan hanya dihitung dari transaksi yang benar-benar sukses dibayar dan berhasil dikirim ke pelanggan.
+
+5. **Otomatisasi Skema Berulang (`CREATE OR REPLACE`)**
+   * **Tindakan:** Menggunakan perintah `CREATE OR REPLACE TABLE / VIEW` untuk setiap tahapan.
+   * **Alasan:** Membangun *pipeline* data yang bersifat *idempotent* (dapat dijalankan berulang kali secara otomatis) tanpa risiko *error* akibat tabel yang sudah ada sebelumnya.
 
 ---
 
@@ -26,31 +42,29 @@ Berdasarkan data yang telah diolah, berikut adalah ringkasan performa bisnis mak
 
 | Metrik KPI | Nilai | Deskripsi |
 | :--- | :---: | :--- |
-| **Total Revenue** | **Rp 148,9 M** | Total pendapatan kotor selama periode analisis. |
-| **Total Transactions** | **74,9 rb** | Jumlah total order/transaksi yang berhasil diproses. |
-| **Total Customers** | **17,9 rb** | Jumlah pelanggan unik (*unique buyers*) yang bertransaksi. |
+| **Total Revenue** | **Rp 129,5 M** | Total pendapatan kotor selama periode analisis. |
+| **Total Transactions** | **65,1 rb** | Jumlah total order/transaksi yang berhasil diproses. |
+| **Total Customers** | **17,7 rb** | Jumlah pelanggan unik (*unique buyers*) yang bertransaksi. |
 | **Average Order Value (AOV)** | **Rp 2,0 jt** | Rata-rata nilai belanja per satu kali transaksi. |
-| **Total Discount Given** | **Rp 1,2 M** | Total potongan harga yang diberikan kepada konsumen. |
+| **Total Discount Given** | **Rp 1,1 M** | Total potongan harga yang diberikan kepada konsumen. |
 
 ---
 
 ## 🔍 4. Key Insights & Deep Dive Analysis
 
 ### A. Tren Pendapatan & Efek Musiman (*Seasonality*)
-* **Pertumbuhan Eksponensial:** Tren pendapatan menunjukkan pertumbuhan yang masif dan mencapai puncaknya pada **Mei 2020** dengan pendapatan menyentuh **~Rp 31 Miliar**.
-* **Anomali Awal Tahun (*Post-Holiday Slump*):** Terjadi penurunan tajam pada **Januari 2020 (~ -49%)**. Penurunan ini diidentifikasi sebagai efek musiman (*seasonality*) yang wajar pasca-liburan akhir tahun, di mana daya beli konsumen kembali ke level normal setelah melonjak di kuartal ke-4 (Q4).
+* **Pertumbuhan Eksponensial:** Tren pendapatan menunjukkan pertumbuhan yang masif dan mencapai puncaknya pada **Mei 2020** dengan pendapatan menyentuh **~Rp 27 Miliar**.
+* **Anomali Awal Tahun (*Post-Holiday Slump*):** Terjadi penurunan tajam pada **Januari 2020 (-42,9%)**. Penurunan ini diidentifikasi sebagai efek musiman (*seasonality*) yang wajar pasca-liburan akhir tahun.
 
 ### B. Analisis Kategori & Performa Produk
-* **Kategori Dominan:** Kategori **Kebersihan Diri** merupakan *revenue driver* terbesar bagi bisnis, berkontribusi sebanyak **30,9%** dari total pendapatan, disusul oleh **Pakaian Pria (19,4%)** dan **Fresh Food (18,2%)**.
-* **Kesenjangan Performa Produk (*Sales Gap*):** Distribusi penjualan belum merata. Terdapat gap yang sangat besar antara produk teratas dan terbawah:
+* **Kategori Dominan:** Kategori **Kebersihan Diri** merupakan *revenue driver* terbesar bagi bisnis, berkontribusi sebanyak **31,1%** dari total pendapatan.
 
 #### 📊 Tabel Perbandingan Produk (Revenue vs Volume)
 
 | Kategori Analisis | Top Performance | Bottom Performance |
 | :--- | :--- | :--- |
-| **Berdasarkan Revenue** | **Suplemen Kesehatan** (seperti *Blackmores*) mendominasi Top 5 Revenue.<br>• *Kontribusi:* **> Rp 1,1 M - Rp 1,5 M** per produk. | **Mi Instan** (seperti *Indomie & Sedaap*) berada di Bottom 5.<br>• *Kontribusi:* **< Rp 4,5 Juta** per produk. |
-| **Berdasarkan Volume (QTY)** | **Pakaian & Kebutuhan Wanita** (seperti *Emba Short Pant* & *Laurier*).<br>• *Total Terjual:* **> 4.800 unit**. | *(Data volume penjualan terendah tidak signifikan)* |
-
+| **Berdasarkan Revenue** | **Suplemen Kesehatan** (seperti *Blackmores*) mendominasi Top 5 Revenue.<br>• *Kontribusi:* **> Rp 1,1 M - Rp 1,4 M** per produk. | **Mi Instan** (seperti *Indomie & Sedaap*) berada di Bottom 5.<br>• *Kontribusi:* **< Rp 3,7 Juta** per produk. |
+| **Berdasarkan Volume (QTY)** | **Kebersihan Diri & Pakaian** (seperti *Vaseline Lotion* & *Rider Celana 3in1*).<br>• *Total Terjual:* **> 5.300 unit**. | **Minuman & Pakaian** (seperti *Espe Larutan Penyegar* & *Trendy Shirt Raglan*).<br>• *Total Terjual:* **< 630 unit**. |
 ---
 
 ## 💡 5. Business Recommendations
