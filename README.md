@@ -10,6 +10,14 @@ Proyek ini bertujuan untuk menganalisis performa penjualan bisnis ritel/e-commer
 Hasil analisis ini diharapkan dapat membantu tim Manajemen, Marketing, dan Inventory dalam mengambil keputusan strategis berbasis data untuk periode berikutnya.
 
 ---
+### 📋 Dataset Schema (Struktur Data Utama)
+Proyek ini mengolah data transaksi *e-commerce* berskala besar yang terdiri dari 4 tabel utama. Untuk efisiensi analisis, fokus pengolahan dilakukan pada kolom-kolom kunci berikut:
+
+* **`orders`**: Menampung data transaksi makro (Kolom kunci: `order_id`, `buyer_id`, `paid_at`, `delivery_at`).
+* **`order_details`**: Menampung detail item per transaksi (Kolom kunci: `order_id`, `product_id`, `price`, `quantity`).
+* **`products`**: Master data produk (Kolom kunci: `product_id`, `desc_product`, `category`).
+
+---
 
 ## 🛠️ 2. Data Preparation & Cleaning
 
