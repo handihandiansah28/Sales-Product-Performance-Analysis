@@ -65,11 +65,18 @@ Berdasarkan data yang telah diolah, berikut adalah ringkasan performa bisnis mak
 | :--- | :--- | :--- |
 | **Berdasarkan Revenue** | **Suplemen Kesehatan** (seperti *Blackmores*) mendominasi Top 5 Revenue.<br>• *Kontribusi:* **> Rp 1,1 M - Rp 1,4 M** per produk. | **Mi Instan** (seperti *Indomie & Sedaap*) berada di Bottom 5.<br>• *Kontribusi:* **< Rp 3,7 Juta** per produk. |
 | **Berdasarkan Volume (QTY)** | **Kebersihan Diri & Pakaian** (seperti *Vaseline Lotion* & *Rider Celana 3in1*).<br>• *Total Terjual:* **> 5.300 unit**. | **Minuman & Pakaian** (seperti *Espe Larutan Penyegar* & *Trendy Shirt Raglan*).<br>• *Total Terjual:* **< 630 unit**. |
+
+## 📊 Dashboard Preview
+
+[![Sales and Product Performance Dashboard](Dashboard_Overview.png)](https://datastudio.google.com/u/0/reporting/e0b17f46-6ba8-4093-9934-b7029d4e9d73/page/GmJ0F)
+
+*Tip: Klik gambar di atas untuk mengakses dasbor interaktif di Looker Studio.*
+
 ---
 
 ## 💡 5. Business Recommendations
 
 * **Strategi Antisipasi *Post-Holiday Slump*:** Tim Marketing disarankan membuat kampanye khusus di awal tahun (misalnya: *New Year Resolution Promo* atau diskon bundling khusus Januari) untuk menjaga stabilitas transaksi agar tidak merosot tajam pasca-Desember.
-* **Optimalisasi Kategori Kebersihan Diri:** Meningkatkan ketersediaan stok (*inventory level*) dan memperluas variasi produk pada kategori Kebersihan Diri, karena kategori ini memiliki minat pasar (*market share*) tertinggi (**30,9%**).
+* **Optimalisasi Kategori Kebersihan Diri:** Meningkatkan ketersediaan stok (*inventory level*) dan memperluas variasi produk pada kategori Kebersihan Diri, karena kategori ini memiliki minat pasar (*market share*) tertinggi (**31,1%**).
 * **Evaluasi *Bottom Products*:** Melakukan evaluasi mendalam terhadap produk mi instan dan barang-barang di kategori *Bottom 5*. Perlu dianalisis apakah marginnya terlalu kecil atau kalah bersaing secara harga, sehingga bisa diputuskan untuk retur ke *supplier* atau diberikan promo *bundling* dengan produk *Top Performance*.
 
